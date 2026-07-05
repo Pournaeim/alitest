@@ -171,7 +171,18 @@
     <section class="controls" aria-label="انتخاب رمزارز">
       <div>
         <label for="cryptoSelect">رمزارز</label>
-        <select id="cryptoSelect"></select>
+        <select id="cryptoSelect">
+          <option value="BTCUSDT" data-name="Bitcoin" data-ticker="BTC">Bitcoin (BTC)</option>
+          <option value="ETHUSDT" data-name="Ethereum" data-ticker="ETH">Ethereum (ETH)</option>
+          <option value="BNBUSDT" data-name="BNB" data-ticker="BNB">BNB (BNB)</option>
+          <option value="SOLUSDT" data-name="Solana" data-ticker="SOL">Solana (SOL)</option>
+          <option value="XRPUSDT" data-name="XRP" data-ticker="XRP">XRP (XRP)</option>
+          <option value="DOGEUSDT" data-name="Dogecoin" data-ticker="DOGE">Dogecoin (DOGE)</option>
+          <option value="ADAUSDT" data-name="Cardano" data-ticker="ADA">Cardano (ADA)</option>
+          <option value="TRXUSDT" data-name="TRON" data-ticker="TRX">TRON (TRX)</option>
+          <option value="TONUSDT" data-name="Toncoin" data-ticker="TON">Toncoin (TON)</option>
+          <option value="LINKUSDT" data-name="Chainlink" data-ticker="LINK">Chainlink (LINK)</option>
+        </select>
       </div>
       <button id="refreshBtn" type="button">به‌روزرسانی</button>
     </section>
@@ -193,19 +204,6 @@
   </main>
 
   <script>
-    const assets = [
-      { name: 'Bitcoin', ticker: 'BTC', symbol: 'BTCUSDT' },
-      { name: 'Ethereum', ticker: 'ETH', symbol: 'ETHUSDT' },
-      { name: 'BNB', ticker: 'BNB', symbol: 'BNBUSDT' },
-      { name: 'Solana', ticker: 'SOL', symbol: 'SOLUSDT' },
-      { name: 'XRP', ticker: 'XRP', symbol: 'XRPUSDT' },
-      { name: 'Dogecoin', ticker: 'DOGE', symbol: 'DOGEUSDT' },
-      { name: 'Cardano', ticker: 'ADA', symbol: 'ADAUSDT' },
-      { name: 'TRON', ticker: 'TRX', symbol: 'TRXUSDT' },
-      { name: 'Toncoin', ticker: 'TON', symbol: 'TONUSDT' },
-      { name: 'Chainlink', ticker: 'LINK', symbol: 'LINKUSDT' }
-    ];
-
     let timerId;
 
     function formatPrice(price) {
@@ -218,7 +216,13 @@
     }
 
     function selectedAsset() {
-      return assets.find(asset => asset.symbol === $('#cryptoSelect').val()) || assets[0];
+      const selectedOption = $('#cryptoSelect option:selected');
+
+      return {
+        name: selectedOption.data('name'),
+        ticker: selectedOption.data('ticker'),
+        symbol: selectedOption.val()
+      };
     }
 
     function setLoading(asset) {
@@ -255,10 +259,6 @@
     }
 
     $(function () {
-      assets.forEach(asset => {
-        $('#cryptoSelect').append(new Option(`${asset.name} (${asset.ticker})`, asset.symbol));
-      });
-
       $('#cryptoSelect').on('change', startAutoRefresh);
       $('#refreshBtn').on('click', updatePrice);
       startAutoRefresh();
