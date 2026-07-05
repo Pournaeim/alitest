@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>قیمت لحظه‌ای رمزارزها از MEXC</title>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0f172a;
+      --card: rgba(15, 23, 42, 0.78);
+      --muted: #94a3b8;
+      --text: #e2e8f0;
+      --accent: #22d3ee;
+      --accent-strong: #06b6d4;
+      --danger: #fb7185;
+      --success: #34d399;
+      --border: rgba(148, 163, 184, 0.2);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      font-family: Tahoma, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(34, 211, 238, 0.2), transparent 30rem),
+        linear-gradient(135deg, #020617 0%, var(--bg) 55%, #111827 100%);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    main {
+      width: min(100%, 760px);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+      padding: clamp(22px, 5vw, 42px);
+      backdrop-filter: blur(18px);
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      line-height: 1.25;
+    }
+
+    .lead {
+      margin: 0 0 28px;
+      color: var(--muted);
+      line-height: 1.9;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: end;
+      margin-bottom: 26px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    select, button {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 16px;
+      background: rgba(2, 6, 23, 0.8);
+      color: var(--text);
+      font: inherit;
+      outline: none;
+    }
+
+    select:focus, button:focus-visible {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.16);
+    }
+
+    button {
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      color: #083344;
+      font-weight: 800;
+      min-width: 130px;
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+
+    button:hover { transform: translateY(-1px); filter: brightness(1.05); }
+
+    .price-card {
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 26px;
+      background: rgba(2, 6, 23, 0.54);
+    }
+
+    .symbol-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .symbol-name {
+      font-size: 1.3rem;
+      font-weight: 800;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .price {
+      direction: ltr;
+      text-align: right;
+      font-size: clamp(2.4rem, 10vw, 5.6rem);
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      margin: 0;
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    .meta-item {
+      border-radius: 16px;
+      background: rgba(15, 23, 42, 0.9);
+      padding: 14px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .meta-item strong {
+      display: block;
+      color: var(--text);
+    }
+
+    .error { color: var(--danger); }
+    .ok { color: var(--success); }
+
+    @media (max-width: 620px) {
+      .controls, .meta { grid-template-columns: 1fr; }
+      button { min-width: 0; }
+      .price { text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>قیمت لحظه‌ای رمزارزها</h1>
+    <p class="lead">یکی از ۱۰ رمزارز مهم بازار را انتخاب کنید تا قیمت جفت‌ارز USDT از صرافی MEXC هر ۱۰ ثانیه به‌روزرسانی شود.</p>
+
+    <section class="controls" aria-label="انتخاب رمزارز">
+      <div>
+        <label for="cryptoSelect">رمزارز</label>
+        <select id="cryptoSelect"></select>
+      </div>
+      <button id="refreshBtn" type="button">به‌روزرسانی</button>
+    </section>
+
+    <section class="price-card" aria-live="polite">
+      <div class="symbol-row">
+        <div>
+          <div id="assetName" class="symbol-name">Bitcoin (BTC)</div>
+          <div id="status" class="status">در حال دریافت قیمت...</div>
+        </div>
+        <div class="status">منبع: MEXC Spot API</div>
+      </div>
+      <p id="price" class="price">--</p>
+      <div class="meta">
+        <div class="meta-item">نماد معاملاتی<strong id="symbol">BTCUSDT</strong></div>
+        <div class="meta-item">آخرین به‌روزرسانی<strong id="updatedAt">--</strong></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const assets = [
+      { name: 'Bitcoin', ticker: 'BTC', symbol: 'BTCUSDT' },
+      { name: 'Ethereum', ticker: 'ETH', symbol: 'ETHUSDT' },
+      { name: 'BNB', ticker: 'BNB', symbol: 'BNBUSDT' },
+      { name: 'Solana', ticker: 'SOL', symbol: 'SOLUSDT' },
+      { name: 'XRP', ticker: 'XRP', symbol: 'XRPUSDT' },
+      { name: 'Dogecoin', ticker: 'DOGE', symbol: 'DOGEUSDT' },
+      { name: 'Cardano', ticker: 'ADA', symbol: 'ADAUSDT' },
+      { name: 'TRON', ticker: 'TRX', symbol: 'TRXUSDT' },
+      { name: 'Toncoin', ticker: 'TON', symbol: 'TONUSDT' },
+      { name: 'Chainlink', ticker: 'LINK', symbol: 'LINKUSDT' }
+    ];
+
+    let timerId;
+
+    function formatPrice(price) {
+      return Number(price).toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: Number(price) >= 1 ? 2 : 6,
+        maximumFractionDigits: Number(price) >= 1 ? 2 : 8
+      });
+    }
+
+    function selectedAsset() {
+      return assets.find(asset => asset.symbol === $('#cryptoSelect').val()) || assets[0];
+    }
+
+    function setLoading(asset) {
+      $('#assetName').text(`${asset.name} (${asset.ticker})`);
+      $('#symbol').text(asset.symbol);
+      $('#status').removeClass('error ok').text('در حال دریافت قیمت...');
+    }
+
+    function updatePrice() {
+      const asset = selectedAsset();
+      setLoading(asset);
+
+      $.ajax({
+        url: 'https://api.mexc.com/api/v3/ticker/price',
+        method: 'GET',
+        data: { symbol: asset.symbol },
+        dataType: 'json',
+        timeout: 9000
+      })
+        .done(response => {
+          $('#price').text(formatPrice(response.price));
+          $('#updatedAt').text(new Date().toLocaleString('fa-IR'));
+          $('#status').addClass('ok').text('قیمت با موفقیت دریافت شد؛ به‌روزرسانی بعدی تا ۱۰ ثانیه دیگر انجام می‌شود.');
+        })
+        .fail(() => {
+          $('#status').addClass('error').text('دریافت قیمت ناموفق بود. اتصال اینترنت یا دسترسی API صرافی MEXC را بررسی کنید.');
+        });
+    }
+
+    function startAutoRefresh() {
+      clearInterval(timerId);
+      updatePrice();
+      timerId = setInterval(updatePrice, 10000);
+    }
+
+    $(function () {
+      assets.forEach(asset => {
+        $('#cryptoSelect').append(new Option(`${asset.name} (${asset.ticker})`, asset.symbol));
+      });
+
+      $('#cryptoSelect').on('change', startAutoRefresh);
+      $('#refreshBtn').on('click', updatePrice);
+      startAutoRefresh();
+    });
+  </script>
+</body>
+</html>
